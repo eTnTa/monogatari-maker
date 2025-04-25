@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react';
 import { useState } from 'react';
 
 type Choice = {
@@ -21,7 +21,6 @@ type Props = {
 export default function MonogatariMaker({ initialScenes, onChange }: Props) {
   const [scenes, setScenes] = useState<Scene[]>(initialScenes);
 
-  // シーンを追加
   const addScene = () => {
     const newScene: Scene = {
       sceneId: `scene${scenes.length + 1}`,
@@ -33,14 +32,12 @@ export default function MonogatariMaker({ initialScenes, onChange }: Props) {
     onChange(updatedScenes);
   };
 
-  // シーンの削除
   const deleteScene = (index: number) => {
     const updatedScenes = scenes.filter((_, i) => i !== index);
     setScenes(updatedScenes);
     onChange(updatedScenes);
   };
 
-  // シーンの並び替え（上へ）
   const moveSceneUp = (index: number) => {
     if (index === 0) return;
     const updatedScenes = [...scenes];
@@ -49,7 +46,6 @@ export default function MonogatariMaker({ initialScenes, onChange }: Props) {
     onChange(updatedScenes);
   };
 
-  // シーンの並び替え（下へ）
   const moveSceneDown = (index: number) => {
     if (index === scenes.length - 1) return;
     const updatedScenes = [...scenes];
@@ -58,7 +54,6 @@ export default function MonogatariMaker({ initialScenes, onChange }: Props) {
     onChange(updatedScenes);
   };
 
-  // 選択肢を追加
   const addChoice = (sceneIndex: number) => {
     const updatedScenes = [...scenes];
     updatedScenes[sceneIndex].choices.push({ text: '新しい選択肢', nextScene: '' });
@@ -66,7 +61,6 @@ export default function MonogatariMaker({ initialScenes, onChange }: Props) {
     onChange(updatedScenes);
   };
 
-  // 選択肢を削除
   const deleteChoice = (sceneIndex: number, choiceIndex: number) => {
     const updatedScenes = [...scenes];
     updatedScenes[sceneIndex].choices.splice(choiceIndex, 1);
@@ -103,45 +97,49 @@ export default function MonogatariMaker({ initialScenes, onChange }: Props) {
             }}
           />
 
-{scene.choices.map((choice, choiceIndex) => (
-  <div key={choiceIndex} className="mt-2">
-    <label className="block text-sm font-medium">選択肢 {choiceIndex + 1}</label>
+          {scene.choices.map((choice, choiceIndex) => (
+            <div key={choiceIndex} className="mt-2 border p-2 rounded bg-white shadow-sm">
+              <label className="block text-sm font-medium">選択肢 {choiceIndex + 1}</label>
+              <input
+                type="text"
+                className="w-full border p-2 mb-1"
+                value={choice.text}
+                onChange={(e) => {
+                  const updatedScenes = [...scenes];
+                  updatedScenes[sceneIndex].choices[choiceIndex].text = e.target.value;
+                  setScenes(updatedScenes);
+                  onChange(updatedScenes);
+                }}
+              />
 
-    {/* 選択肢のテキスト */}
-    <input
-      type="text"
-      className="w-full border p-2 mb-1"
-      value={choice.text}
-      onChange={(e) => {
-        const updatedScenes = [...scenes];
-        updatedScenes[sceneIndex].choices[choiceIndex].text = e.target.value;
-        setScenes(updatedScenes);
-        onChange(updatedScenes);
-      }}
-    />
+              <label className="block text-sm font-medium">ジャンプ先シーン</label>
+              <select
+                className="w-full border p-2 mb-2"
+                value={choice.nextScene}
+                onChange={(e) => {
+                  const updatedScenes = [...scenes];
+                  updatedScenes[sceneIndex].choices[choiceIndex].nextScene = e.target.value;
+                  setScenes(updatedScenes);
+                  onChange(updatedScenes);
+                }}
+              >
+                <option value="">-- 選んでください --</option>
+                {scenes.map((s) => (
+                  <option key={s.sceneId} value={s.sceneId}>
+                    {s.sceneId}
+                  </option>
+                ))}
+              </select>
 
-    {/* ▼ 新しく追加：ジャンプ先セレクトボックス */}
-    <label className="block text-sm font-medium">ジャンプ先シーン</label>
-    <select
-      className="w-full border p-2"
-      value={choice.nextScene}
-      onChange={(e) => {
-        const updatedScenes = [...scenes];
-        updatedScenes[sceneIndex].choices[choiceIndex].nextScene = e.target.value;
-        setScenes(updatedScenes);
-        onChange(updatedScenes);
-      }}
-    >
-      <option value="">-- 選んでください --</option>
-      {scenes.map((s) => (
-        <option key={s.sceneId} value={s.sceneId}>
-          {s.sceneId}
-        </option>
-      ))}
-    </select>
-  </div>
-))}
-
+              {/* ✅ 選択肢削除ボタン */}
+              <button
+                onClick={() => deleteChoice(sceneIndex, choiceIndex)}
+                className="text-sm px-2 py-1 bg-red-200 rounded"
+              >
+                🗑 削除
+              </button>
+            </div>
+          ))}
 
           <button
             onClick={() => addChoice(sceneIndex)}
